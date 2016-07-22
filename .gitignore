@@ -1,0 +1,11 @@
+task01/target
+task01/classes
+task01/checkouts
+pom.xml
+pom.xml.asc
+*.jar
+*.class
+/.lein-*
+/.nrepl-port
+.idea/
+task01/csvdb.iml

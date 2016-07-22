@@ -14,14 +14,14 @@
 ;;
 ;; Hint: vec, map, keyword, first
 (defn table-keys [tbl]
-  :ImplementMe!)
+  (vec (map keyword (first tbl))))
 
 ;; (key-value-pairs [:id :surname :year :group_id] ["1" "Ivanov" "1996"])
 ;; => (:id "1" :surname "Ivanov" :year "1996")
 ;;
 ;; Hint: flatten, map, list
 (defn key-value-pairs [tbl-keys tbl-record]
-  :ImplementMe!)
+  (flatten (map list tbl-keys tbl-record)))
 
 ;; (data-record [:id :surname :year :group_id] ["1" "Ivanov" "1996"])
 ;; => {:surname "Ivanov", :year "1996", :id "1"}

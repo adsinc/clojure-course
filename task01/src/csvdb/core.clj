@@ -37,7 +37,11 @@
 ;;
 ;; Hint: let, map, next, table-keys, data-record
 (defn data-table [tbl]
-  :ImplementMe!)
+  (let [tbl-recs (next tbl)
+        tbl-keys (table-keys tbl)]
+    (map
+      #(data-record tbl-keys %)
+      tbl-recs)))
 
 ;; (str-field-to-int :id {:surname "Ivanov", :year "1996", :id "1"})
 ;; => {:surname "Ivanov", :year "1996", :id 1}

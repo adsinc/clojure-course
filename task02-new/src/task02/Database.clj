@@ -12,7 +12,7 @@
               ^:static [Select [String] String]]))
 
 (defn -InitDatabase [this]
-  )
+  (load-initial-data))
 
 (defn -Select [this query]
-  )
+  (perform-query query))

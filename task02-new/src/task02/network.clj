@@ -40,7 +40,7 @@
       )))
 
 (defn run [port]
-  (let [sock-addr (InetSocketAddress. nil port)
+  (let [sock-addr (InetSocketAddress. port)
         server-socket (doto (ServerSocket.)
                         (.setReuseAddress true)
                         (.setSoTimeout 3000)

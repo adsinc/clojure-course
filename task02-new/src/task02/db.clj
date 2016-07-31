@@ -21,9 +21,9 @@
   (update-in rec [field] parse-int))
 
 ;; Место для хранения данных - используйте atom/ref/agent/...
-(def student :implement-me)
-(def subject :implement-me)
-(def student-subject :implement-me)
+(def student (ref []))
+(def subject (atom []))
+(def student-subject (agent []))
 
 ;; функция должна вернуть мутабельный объект используя его имя
 (defn get-table [^String tb-name]
@@ -38,14 +38,18 @@
 ;;; и сохраняет их в изменяемых переменных student, subject, student-subject
 (defn load-initial-data []
   ;;; :implement-me может быть необходимо добавить что-то еще
-  (:implement-me student (->> (data-table (csv/read-csv (slurp "student.csv")))
-                     (map #(str-field-to-int :id %))
-                     (map #(str-field-to-int :year %))))
-  (:implement-me subject (->> (data-table (csv/read-csv (slurp "subject.csv")))
-                     (map #(str-field-to-int :id %))))
-  (:implement-me student-subject (->> (data-table (csv/read-csv (slurp "student_subject.csv")))
-                             (map #(str-field-to-int :subject_id %))
-                             (map #(str-field-to-int :student_id %)))))
+  (let [replace-data #(apply conj %1 %2)]
+    (dosync (commute student replace-data
+                     (->> (data-table (csv/read-csv (slurp "student.csv")))
+                          (map #(str-field-to-int :id %))
+                          (map #(str-field-to-int :year %)))))
+    (swap! subject replace-data
+           (->> (data-table (csv/read-csv (slurp "subject.csv")))
+                (map #(str-field-to-int :id %))))
+    (send student-subject replace-data
+          (->> (data-table (csv/read-csv (slurp "student_subject.csv")))
+               (map #(str-field-to-int :subject_id %))
+               (map #(str-field-to-int :student_id %))))))
 
 ;; select-related functions...
 (defn where* [data condition-func]

@@ -21,9 +21,9 @@
   (update-in rec [field] parse-int))
 
 ;; Место для хранения данных - используйте atom/ref/agent/...
-(def student (ref []))
+(def student (atom []))
 (def subject (atom []))
-(def student-subject (agent []))
+(def student-subject (atom []))
 
 ;; функция должна вернуть мутабельный объект используя его имя
 (defn get-table [^String tb-name]
@@ -39,17 +39,17 @@
 (defn load-initial-data []
   ;;; :implement-me может быть необходимо добавить что-то еще
   (let [replace-data #(apply conj %1 %2)]
-    (dosync (commute student replace-data
-                     (->> (data-table (csv/read-csv (slurp "student.csv")))
-                          (map #(str-field-to-int :id %))
-                          (map #(str-field-to-int :year %)))))
+    (swap! student replace-data
+           (->> (data-table (csv/read-csv (slurp "student.csv")))
+                (map #(str-field-to-int :id %))
+                (map #(str-field-to-int :year %))))
     (swap! subject replace-data
            (->> (data-table (csv/read-csv (slurp "subject.csv")))
                 (map #(str-field-to-int :id %))))
-    (send student-subject replace-data
-          (->> (data-table (csv/read-csv (slurp "student_subject.csv")))
-               (map #(str-field-to-int :subject_id %))
-               (map #(str-field-to-int :student_id %))))))
+    (swap! student-subject replace-data
+           (->> (data-table (csv/read-csv (slurp "student_subject.csv")))
+                (map #(str-field-to-int :subject_id %))
+                (map #(str-field-to-int :student_id %))))))
 
 ;; select-related functions...
 (defn where* [data condition-func]
@@ -103,8 +103,9 @@
 ;;   (delete student) -> []
 ;;   (delete student :where #(= (:id %) 1)) -> все кроме первой записи
 (defn delete [data & {:keys [where]}]
-  :implement-me
-  )
+  (reset! data
+          (if where (vec (remove where @data))
+                    [])))
 
 ;; Данная функция должна обновить данные в строках соответствующих указанному предикату
 ;; (или во всей таблице).

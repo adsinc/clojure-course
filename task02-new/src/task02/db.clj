@@ -103,9 +103,7 @@
 ;;   (delete student) -> []
 ;;   (delete student :where #(= (:id %) 1)) -> все кроме первой записи
 (defn delete [data & {:keys [where]}]
-  (reset! data
-          (if where (vec (remove where @data))
-                    [])))
+  (swap! data #(if where (vec (remove where %)) [])))
 
 ;; Данная функция должна обновить данные в строках соответствующих указанному предикату
 ;; (или во всей таблице).
@@ -117,9 +115,9 @@
 ;;   (update student {:id 5})
 ;;   (update student {:id 6} :where #(= (:year %) 1996))
 (defn update [data upd-map & {:keys [where]}]
-  :implement-me
-  )
-
+  (let [need-merge? #(or (nil? where) (where %))
+        update-record #(if (need-merge? %) (merge % upd-map) %)]
+    (swap! data #(map update-record %))))
 
 ;; Вставляет новую строку в указанную таблицу
 ;;
@@ -129,6 +127,5 @@
 ;; Примеры использования:
 ;;   (insert student {:id 10 :year 2000 :surname "test"})
 (defn insert [data new-entry]
-  :implement-me
-  )
+  (swap! data conj new-entry))
 

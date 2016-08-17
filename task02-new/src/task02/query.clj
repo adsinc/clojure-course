@@ -40,11 +40,13 @@
 
 (defn parse-select
   [^String sel-string]
-  (let [select-vec (vec (.split sel-string " "))]
-    (parse-select-vec select-vec {})))
+  (let [select-vec (vec (.split sel-string " "))
+        parse-map (parse-select-vec select-vec)]
+    ))
 
 (defn parse-select-vec
-  [sel-vec acc]
+  ([sel-vec] (parse-select-vec sel-vec {}))
+  ([sel-vec acc]
   (match sel-vec
          ["select" tbl-name & other]
          (parse-select-vec other (assoc acc :table tbl-name))
@@ -63,7 +65,7 @@
 
          :else (if (empty? sel-vec)
                  acc
-                 nil)))
+                 nil))))
 
 (defn make-where-function [& args] :implement-me)
 

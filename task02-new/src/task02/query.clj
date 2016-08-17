@@ -1,5 +1,6 @@
 (ns task02.query
-  (:use [task02 helpers db]))
+  (:use [task02 helpers db]
+        [clojure.core.match :only (match)]))
 
 ;; Функция выполняющая парсинг запроса переданного пользователем
 ;;
@@ -34,8 +35,35 @@
 ;; ("student" :where #<function> :order-by :id :limit 2 :joins [[:id "subject" :sid]])
 ;; > (parse-select "werfwefw")
 ;; nil
-(defn parse-select [^String sel-string]
-  :implement-me)
+(declare parse-select-vec)
+(declare make-where-function)
+
+(defn parse-select
+  [^String sel-string]
+  (let [select-vec (vec (.split sel-string " "))]
+    (parse-select-vec select-vec {})))
+
+(defn parse-select-vec
+  [sel-vec acc]
+  (match sel-vec
+         ["select" tbl-name & other]
+         (parse-select-vec other (assoc acc :table tbl-name))
+
+         ["where" left op right & other]
+         (parse-select-vec other (assoc acc :where (make-where-function left op right)))
+
+         ["limit" num & other]
+         (parse-select-vec other (assoc acc :limit (parse-int num)))
+
+         ["order" "by" column & other]
+         (parse-select-vec other (assoc acc :order-by (keyword column)))
+
+         ["join" tbl-name "on" left "=" right & other]
+         (parse-select-vec other (assoc acc :joins [[(keyword left) tbl-name (keyword right)]]))
+
+         :else (if (empty? sel-vec)
+                 acc
+                 nil)))
 
 (defn make-where-function [& args] :implement-me)
 

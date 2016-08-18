@@ -55,19 +55,14 @@
      (match sel-vec
             ["select" tbl-name & _]
             (rec 2 tbl-name)
-
             ["where" left op right & _]
             (rec 4 :where (make-where-function left op right))
-
             ["limit" num & _]
             (rec 2 :limit (parse-int num))
-
             ["order" "by" column & _]
             (rec 3 :order-by (keyword column))
-
             ["join" tbl-name "on" left "=" right & other]
             (parse-select-vec other acc (conj join-acc [(keyword left) tbl-name (keyword right)]))
-
             :else (if (empty? sel-vec)
                     (concat acc [:joins join-acc])
                     nil)))))

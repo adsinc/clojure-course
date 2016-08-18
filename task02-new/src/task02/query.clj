@@ -40,31 +40,30 @@
 
 (defn parse-select
   [^String sel-string]
-  (let [select-vec (vec (.split sel-string " "))
-        parse-map (parse-select-vec select-vec)]
-    ))
+  (let [select-vec (vec (.split sel-string " "))]
+        (parse-select-vec select-vec)))
 
 (defn parse-select-vec
-  ([sel-vec] (parse-select-vec sel-vec {}))
-  ([sel-vec acc]
+  ([sel-vec] (parse-select-vec sel-vec [] []))
+  ([sel-vec acc join-acc]
   (match sel-vec
          ["select" tbl-name & other]
-         (parse-select-vec other (assoc acc :table tbl-name))
+         (parse-select-vec other (conj acc tbl-name) join-acc)
 
          ["where" left op right & other]
-         (parse-select-vec other (assoc acc :where (make-where-function left op right)))
+         (parse-select-vec other (conj acc :where (make-where-function left op right)) join-acc)
 
          ["limit" num & other]
-         (parse-select-vec other (assoc acc :limit (parse-int num)))
+         (parse-select-vec other (conj acc :limit (parse-int num)) join-acc)
 
          ["order" "by" column & other]
-         (parse-select-vec other (assoc acc :order-by (keyword column)))
+         (parse-select-vec other (conj acc :order-by (keyword column)) join-acc)
 
          ["join" tbl-name "on" left "=" right & other]
-         (parse-select-vec other (assoc acc :joins [[(keyword left) tbl-name (keyword right)]]))
+         (parse-select-vec other acc (conj join-acc [(keyword left) tbl-name (keyword right)]))
 
          :else (if (empty? sel-vec)
-                 acc
+                 (concat acc [:joins join-acc])
                  nil))))
 
 (defn make-where-function [& args] :implement-me)

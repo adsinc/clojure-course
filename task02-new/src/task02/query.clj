@@ -46,25 +46,31 @@
 (defn parse-select-vec
   ([sel-vec] (parse-select-vec sel-vec [] []))
   ([sel-vec acc join-acc]
-  (match sel-vec
-         ["select" tbl-name & other]
-         (parse-select-vec other (conj acc tbl-name) join-acc)
+   (let [append (fn [& xs] (apply conj acc xs))
+         rec (fn [parsed-count & elems]
+               (parse-select-vec
+                 (subvec parsed-count sel-vec)
+                 (apply append elems)
+                 join-acc))]
+     (match sel-vec
+            ["select" tbl-name & _]
+            (rec 2 tbl-name)
 
-         ["where" left op right & other]
-         (parse-select-vec other (conj acc :where (make-where-function left op right)) join-acc)
+            ["where" left op right & _]
+            (rec 4 :where (make-where-function left op right))
 
-         ["limit" num & other]
-         (parse-select-vec other (conj acc :limit (parse-int num)) join-acc)
+            ["limit" num & _]
+            (rec 2 :limit (parse-int num))
 
-         ["order" "by" column & other]
-         (parse-select-vec other (conj acc :order-by (keyword column)) join-acc)
+            ["order" "by" column & _]
+            (rec 3 :order-by (keyword column))
 
-         ["join" tbl-name "on" left "=" right & other]
-         (parse-select-vec other acc (conj join-acc [(keyword left) tbl-name (keyword right)]))
+            ["join" tbl-name "on" left "=" right & other]
+            (parse-select-vec other acc (conj join-acc [(keyword left) tbl-name (keyword right)]))
 
-         :else (if (empty? sel-vec)
-                 (concat acc [:joins join-acc])
-                 nil))))
+            :else (if (empty? sel-vec)
+                    (concat acc [:joins join-acc])
+                    nil)))))
 
 (defn make-where-function [& args] :implement-me)
 

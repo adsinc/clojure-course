@@ -67,7 +67,12 @@
                     (concat acc [:joins join-acc])
                     nil)))))
 
-(defn make-where-function [& args] :implement-me)
+(defn make-where-function [& args]
+  (let [[col f-name num] args
+        fn-sym (symbol f-name)
+        compare-fn (resolve fn-sym)]
+    (fn [rec]
+      (compare-fn (col rec) num))))
 
 ;; Выполняет запрос переданный в строке.  Бросает исключение если не удалось распарсить запрос
 

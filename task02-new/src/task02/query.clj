@@ -49,7 +49,7 @@
    (let [append (fn [& xs] (apply conj acc xs))
          rec (fn [parsed-count & elems]
                (parse-select-vec
-                 (subvec parsed-count sel-vec)
+                 (subvec sel-vec parsed-count)
                  (apply append elems)
                  join-acc))]
      (match sel-vec

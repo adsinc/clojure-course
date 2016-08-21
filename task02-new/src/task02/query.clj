@@ -68,11 +68,13 @@
                     nil)))))
 
 (defn make-where-function [& args]
-  (let [[col f-name num] args
+  (let [[column-name f-name num] args
         fn-sym (symbol f-name)
         compare-fn (resolve fn-sym)]
     (fn [rec]
-      (compare-fn (col rec) num))))
+      (compare-fn
+        ((keyword column-name) rec)
+        (parse-int num)))))
 
 ;; Выполняет запрос переданный в строке.  Бросает исключение если не удалось распарсить запрос
 

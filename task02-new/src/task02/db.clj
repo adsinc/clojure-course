@@ -34,22 +34,22 @@
      (= lname "student-subject") student-subject
      )))
 
+(declare delete)
 ;;; Данная функция загружает начальные данные из файлов .csv
 ;;; и сохраняет их в изменяемых переменных student, subject, student-subject
 (defn load-initial-data []
   ;;; :implement-me может быть необходимо добавить что-то еще
-  (let [replace-data #(apply conj %1 %2)]
-    (swap! student replace-data
+    (reset! student
            (->> (data-table (csv/read-csv (slurp "student.csv")))
                 (map #(str-field-to-int :id %))
                 (map #(str-field-to-int :year %))))
-    (swap! subject replace-data
+    (reset! subject
            (->> (data-table (csv/read-csv (slurp "subject.csv")))
                 (map #(str-field-to-int :id %))))
-    (swap! student-subject replace-data
+    (reset! student-subject
            (->> (data-table (csv/read-csv (slurp "student_subject.csv")))
                 (map #(str-field-to-int :subject_id %))
-                (map #(str-field-to-int :student_id %))))))
+                (map #(str-field-to-int :student_id %)))))
 
 ;; select-related functions...
 (defn where* [data condition-func]

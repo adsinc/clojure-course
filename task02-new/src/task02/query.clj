@@ -63,9 +63,10 @@
             (rec 3 :order-by (keyword column))
             ["join" tbl-name "on" left "=" right & other]
             (parse-select-vec other acc (conj join-acc [(keyword left) tbl-name (keyword right)]))
-            :else (if (empty? sel-vec)
-                    (concat acc [:joins join-acc])
-                    nil)))))
+            :else (when (empty? sel-vec)
+                    (concat acc (when-not
+                                  (empty? join-acc)
+                                  [:joins join-acc])))))))
 
 (defn make-where-function [& args]
   (let [[column-name f-name num] args

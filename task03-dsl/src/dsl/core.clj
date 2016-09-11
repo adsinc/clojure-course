@@ -1,15 +1,15 @@
 (ns dsl.core
   (:use clojure.walk)
-  (:import (java.util Date)))
+  (:import (java.util Date Calendar)))
 
-(def cal (java.util.Calendar/getInstance))
+(def cal (Calendar/getInstance))
 (def today (Date.))
-(def yesterday (do (.add cal java.util.Calendar/DATE -1) (.getTime cal)))
-(def tomorrow (do (.add cal java.util.Calendar/DATE 2) (.getTime cal)))
+(def yesterday (do (.add cal Calendar/DATE -1) (.getTime cal)))
+(def tomorrow (do (.add cal Calendar/DATE 2) (.getTime cal)))
 
 (comment
   (defn one [] 1)
-  
+
   ;; Примеры вызова
   (with-datetime
     (if (> today tomorrow) (println "Time goes wrong"))
@@ -53,7 +53,22 @@
 ;; И так далее.
 ;; Результат работы функции - новая дата, получаемая из календаря так: (.getTime cal)
 (defn d-add [date op num period]
-  :ImplementMe!)
+  (let [delta (eval `(~op ~num))
+        remove-s (fn [str]
+                   (if (.endsWith str "s")
+                     (subs str 0 (dec (.length str)))
+                     str))
+        cal-period (->> period
+                        str
+                        remove-s
+                        (#(get {"day" "date"} % %))
+                        .toUpperCase
+                        (symbol "java.util.Calendar")
+                        eval)]
+    (doto (Calendar/getInstance)
+      (.setTime date)
+      (.add cal-period delta)
+      (.getTime))))
 
 ;; Можете использовать эту функцию для того, чтобы определить,
 ;; является ли список из 4-х элементов тем самым списком, который создает новую дату,
@@ -65,7 +80,7 @@
          (or (= '+ op)
              (= '- op))
          (contains? #{'day 'days 'week 'weeks 'month 'months 'year 'years
-                      'hour 'hours 'minute 'minutes 'second 'seconds} period ))))
+                      'hour 'hours 'minute 'minutes 'second 'seconds} period))))
 
 ;; В code содержится код-как-данные. Т.е. сам code -- коллекция, но его содержимое --
 ;; нормальный код на языке Clojure.

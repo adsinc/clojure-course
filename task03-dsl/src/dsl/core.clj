@@ -1,8 +1,9 @@
 (ns dsl.core
-  (:use clojure.walk))
+  (:use clojure.walk)
+  (:import (java.util Date)))
 
 (def cal (java.util.Calendar/getInstance))
-(def today (java.util.Date.))
+(def today (Date.))
 (def yesterday (do (.add cal java.util.Calendar/DATE -1) (.getTime cal)))
 (def tomorrow (do (.add cal java.util.Calendar/DATE 2) (.getTime cal)))
 
@@ -32,7 +33,9 @@
 ;; Если получены не даты, то выполнить операцию op в обычном порядке:
 ;; (op d1 d2).
 (defn d-op [op d1 d2]
-  :ImplementMe!)
+  (if (and (instance? Date d1) (instance? Date d2))
+    (op (.getTime d1) (.getTime d2))
+    (op d1 d2)))
 
 ;; Пример вызова:
 ;; (d-add today '+ 1 'day)

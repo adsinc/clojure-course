@@ -82,12 +82,28 @@
          (contains? #{'day 'days 'week 'weeks 'month 'months 'year 'years
                       'hour 'hours 'minute 'minutes 'second 'seconds} period))))
 
+(defn is-d-op? [code]
+  (let [op (first code)]
+    (and (= (count code) 3)
+         (or (= '> op)
+             (= '>= op)
+             (=  '< op)
+             (= '<= op)))))
+
+(defn replace-dsl
+  [form]
+  (if (seq? form)
+    (cond
+      (is-date-op? form) `(d-add ~@form)
+      (is-d-op? form) `(d-op ~@form)
+      :else (map replace-dsl form))
+    form))
+
 ;; В code содержится код-как-данные. Т.е. сам code -- коллекция, но его содержимое --
 ;; нормальный код на языке Clojure.
 ;; Нам необходимо пройтись по каждому элементу этого кода, найти все списки из 3-х элементов,
 ;; в которых выполняется сравнение, и подставить вместо этого кода вызов d-op;
 ;; а для списков из четырех элементов, в которых создаются даты, подставить функцию d-add.
 (defmacro with-datetime [& code]
-  :ImplementMe!)
-
-
+  (let [new-code (replace-dsl code)]
+  `(~@new-code)))

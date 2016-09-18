@@ -92,11 +92,14 @@
 
 (defn replace-dsl
   [form]
-  (if (seq? form)
+  (if (coll? form)
     (cond
-      (is-date-op? form) `(d-add ~@form)
+      (is-date-op? form)
+      `(d-add ~@(drop-last 1 form) '~@(take-last 1 form))
       (is-d-op? form) `(d-op ~@form)
-      :else (map replace-dsl form))
+      :else ((if (vector? form) mapv map)
+              replace-dsl
+              form))
     form))
 
 ;; В code содержится код-как-данные. Т.е. сам code -- коллекция, но его содержимое --
@@ -106,4 +109,4 @@
 ;; а для списков из четырех элементов, в которых создаются даты, подставить функцию d-add.
 (defmacro with-datetime [& code]
   (let [new-code (replace-dsl code)]
-  `(~@new-code)))
+  `(do ~@new-code)))

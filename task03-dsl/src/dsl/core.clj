@@ -61,14 +61,15 @@
         cal-period (->> period
                         str
                         remove-s
-                        (#(get {"day" "date"} % %))
+                        (#(get {"day" "date"
+                                "week" "week_of_year"} % %))
                         .toUpperCase
                         (symbol "java.util.Calendar")
                         eval)]
-    (doto (Calendar/getInstance)
-      (.setTime date)
-      (.add cal-period delta)
-      (.getTime))))
+    (.getTime
+      (doto (Calendar/getInstance)
+        (.setTime date)
+        (.add cal-period delta)))))
 
 ;; Можете использовать эту функцию для того, чтобы определить,
 ;; является ли список из 4-х элементов тем самым списком, который создает новую дату,
